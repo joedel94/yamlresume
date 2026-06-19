@@ -1,27 +1,31 @@
 # Miscellaneous Community Contributions
 
 This directory contains valuable community contributions that extend YAML Resume
-functionality.
+functionality into windows environments using a lightweight PowerShell module.
 
-## YAMLResume.psm1
+## YAMLResume
 
-[YAMLResume.psm1](./YAMLResume.psm1) is a PowerShell module that provides
-convenient commands for creating and building resumes using Docker.
+YAMLResume provides helper functions to build a resume from a YAML file and to generate a new YAML resume example file using Windows Docker desktop and the YAML Resume CLI.
 
-**Contributed by:** [@webJose](https://github.com/webJose)
-([#64](https://github.com/yamlresume/yamlresume/issues/64))
+**Contributed by:** [@webJose](https://github.com/webJose) and [@joedel94](https://github.com/joedel94)
+[#64](https://github.com/yamlresume/yamlresume/issues/64), original YamlResume module design
+[!](https://github.com/yamlresume/yamlresume/) 
+
 
 ### Prerequisites
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) must be
-  installed and running.
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) must be installed.
+- YamlResume [Docker container](https://yamlresume.dev/docs#docker-users) running. 
 
 ### Usage
 
-Import the module:
-
+Import the module from the YAMLResume installed directory, note you will need to copy the content out of the [YAMLResume Github](https://github.com/yamlresume/yamlresume) repository or `clone` it using `git`:
 ```powershell
-Import-Module ./miscs/YAMLResume.psm1
+#example including git clone
+Set-Location - Path 'C:\Some\Install\Path\'
+git clone 'https://github.com/yamlresume/yamlresume.git'
+#Note this does not install the module for long term use and will be available only in this PowerShell session 
+Import-Module '.\miscs\YAMLResume.psm1'
 ```
 
 #### Create a New YAML Resume File
