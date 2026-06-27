@@ -1,9 +1,27 @@
-# Private helper: resolves and normalizes output path
+<#
+.SYNOPSIS
+    Private helper that resolves and normalizes output paths
+
+.PARAMETER OutputPath
+    The relative path to the YAML file to process. Defaults to "my-resume.yml".
+
+.EXAMPLE
+    Get-AbsoluteOutputPath -Path 'C:\Users\USERNAME\MyResumes\my-resume.yml'
+#>
+
 function Get-AbsoluteOutputPath {
-    param([Parameter(ValueFromPipeline)][string]$OutputPath)
-    $absoluteOutputPath = (Resolve-Path -Path $OutputPath -ErrorAction SilentlyContinue).Path
-    if (-not $absoluteOutputPath) {
-        $absoluteOutputPath = (New-Item -Path $OutputPath -ItemType Directory -Force).FullName
+
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline, Mandatory = $true)]
+        [string]$OutputPath
+    )
+
+    $AbsoluteOutputPath = (Resolve-Path -Path $OutputPath -ErrorAction SilentlyContinue).Path
+
+    if (-not $AbsoluteOutputPath) {
+        $AbsoluteOutputPath = (New-Item -Path $OutputPath -ItemType Directory -Force).FullName
     }
-    return $absoluteOutputPath -replace '\\', '/'
+
+    return $AbsoluteOutputPath -replace '\\', '/'
 }
