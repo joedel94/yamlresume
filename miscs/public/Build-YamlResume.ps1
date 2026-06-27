@@ -14,7 +14,7 @@
 
 function Build-YamlResume {
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory = $false)]
         [ValidateScript({
@@ -23,30 +23,25 @@ function Build-YamlResume {
             ErrorMessage = "{0} must be a relative path."
         )]
         [ValidateScript({
-                (Test-Path $YamlFile -PathType Leaf) 
+                (Test-Path -Path $_)
             },
             ErrorMessage = "YamlFile {0} not found, check your path."
         )]
         [string]$YamlFile = "my-resume.yml",
 
         [Parameter(Mandatory = $false)]
-        [ValidateScript({
-                -not ([System.IO.Path]::IsPathRooted($_)) 
-            },
-            ErrorMessage = "{0} must be a relative path."
-        )]
         [string]$OutputPath = "./Latest"
     )
-
+    
     $AbsoluteOutputPath = Get-AbsoluteOutputPath -Path $OutputPath
 
-    if (Test-Path $AbsoluteOutputPath) {
-        Get-ChildItem -Path $AbsoluteOutputPath | Remove-Item -Recurse -Force
+    #Moves target resume .yml file to the output path so it can be referenced by the docker container
+    Copy-Item -Path $YamlFile -Destination $AbsoluteOutputPath
+    $BuildYmlFile = Split-Path -Leaf $YamlFile
+    
+    if ($PSCmdlet.ShouldProcess("$AbsoluteOutputPath")) {
+        Write-Verbose "Docker command executed: docker run --rm -v `"$($AbsoluteOutputPath):/home/yamlresume`" yamlresume/yamlresume build $BuildYmlFile"
+        docker run --rm -v "$($AbsoluteOutputPath):/home/yamlresume" yamlresume/yamlresume build $BuildYmlFile
     }
-
-    Copy-Item -Path $YamlFile -Destination $AbsoluteOutputPath -Force
-    $ContainerFile = Split-Path -Leaf $YamlFile
-    Write-Verbose "About to execute: docker run --rm -v `"$($AbsoluteOutputPath):/home/yamlresume`" yamlresume/yamlresume build $containerFile"
-    docker run --rm -v "$($AbsoluteOutputPath):/home/yamlresume" yamlresume/yamlresume build $containerFile
 
 }
