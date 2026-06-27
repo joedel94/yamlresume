@@ -16,24 +16,27 @@ function Build-YamlResume {
 
     [CmdletBinding()]
     param(
-        [Parameter(Position = 0)]
+        [Parameter(Position = 0, Mandatory = $false)]
+        [ValidateScript({
+                -not ([System.IO.Path]::IsPathRooted($_)) 
+            },
+            ErrorMessage = "{0} must be a relative path."
+        )]
+        [ValidateScript({
+                (Test-Path $YamlFile -PathType Leaf) 
+            },
+            ErrorMessage = "YamlFile {0} not found, check your path."
+        )]
         [string]$YamlFile = "my-resume.yml",
-        [Parameter(Position = 1)]
+
+        [Parameter(Position = 1, Mandatory = $false)]
+        [ValidateScript({
+                -not ([System.IO.Path]::IsPathRooted($_)) 
+            },
+            ErrorMessage = "{0} must be a relative path."
+        )]
         [string]$OutputPath = "./Latest"
     )
-    try {
-        Test-RelativePath $YamlFile 'YamlFile'
-        Test-RelativePath $OutputPath 'OutputPath'
-    }
-    catch {
-        Write-Error $_
-        return
-    }
-
-    if (-not (Test-Path $YamlFile -PathType Leaf)) {
-        Write-Error "YamlFile '$YamlFile' not found."
-        return
-    }
 
     $absoluteOutputPath = Get-AbsoluteOutputPath $OutputPath
 

@@ -13,7 +13,12 @@ function New-YamlResume {
 
     [CmdletBinding()]
     param(
-        [Parameter(Position = 0)]
+        [Parameter(Position = 0, Mandatory = $false)]
+        [ValidateScript({
+                -not ([System.IO.Path]::IsPathRooted($_)) 
+            },
+            ErrorMessage = "{0} must be a relative path."
+        )]
         [string]$YamlFile = "my-resume.yml"
     )
 
@@ -25,9 +30,10 @@ function New-YamlResume {
         return
     }
 
-    $absoluteOutputPath = Get-AbsoluteOutputPath (Get-Location).Path
+    #Normalizes output path to work with docker container and ensures we are working with only one literal path
+    $OutputPath = Get-AbsoluteOutputPath -Path $PWD.Path
 
-    Write-Verbose "About to execute: docker run --rm -v `"$($absoluteOutputPath):/home/yamlresume`" yamlresume/yamlresume new $YamlFile"
-    docker run --rm -v "$($absoluteOutputPath):/home/yamlresume" yamlresume/yamlresume new $YamlFile
+    Write-Verbose "About to execute: docker run --rm -v `"$($OutputPath):/home/yamlresume`" yamlresume/yamlresume new $YamlFile"
+    docker run --rm -v "$($OutputPath):/home/yamlresume" yamlresume/yamlresume new $YamlFile
 
 }
