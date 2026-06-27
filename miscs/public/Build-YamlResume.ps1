@@ -16,7 +16,7 @@ function Build-YamlResume {
 
     [CmdletBinding()]
     param(
-        [Parameter(Position = 0, Mandatory = $false)]
+        [Parameter(Mandatory = $false)]
         [ValidateScript({
                 -not ([System.IO.Path]::IsPathRooted($_)) 
             },
@@ -29,7 +29,7 @@ function Build-YamlResume {
         )]
         [string]$YamlFile = "my-resume.yml",
 
-        [Parameter(Position = 1, Mandatory = $false)]
+        [Parameter(Mandatory = $false)]
         [ValidateScript({
                 -not ([System.IO.Path]::IsPathRooted($_)) 
             },
@@ -38,15 +38,15 @@ function Build-YamlResume {
         [string]$OutputPath = "./Latest"
     )
 
-    $absoluteOutputPath = Get-AbsoluteOutputPath $OutputPath
+    $AbsoluteOutputPath = Get-AbsoluteOutputPath -Path $OutputPath
 
-    if (Test-Path $absoluteOutputPath) {
-        Get-ChildItem -Path $absoluteOutputPath | Remove-Item -Recurse -Force
+    if (Test-Path $AbsoluteOutputPath) {
+        Get-ChildItem -Path $AbsoluteOutputPath | Remove-Item -Recurse -Force
     }
 
-    Copy-Item -Path $YamlFile -Destination $absoluteOutputPath -Force
-    $containerFile = Split-Path -Leaf $YamlFile
-    Write-Verbose "About to execute: docker run --rm -v `"$($absoluteOutputPath):/home/yamlresume`" yamlresume/yamlresume build $containerFile"
-    docker run --rm -v "$($absoluteOutputPath):/home/yamlresume" yamlresume/yamlresume build $containerFile
+    Copy-Item -Path $YamlFile -Destination $AbsoluteOutputPath -Force
+    $ContainerFile = Split-Path -Leaf $YamlFile
+    Write-Verbose "About to execute: docker run --rm -v `"$($AbsoluteOutputPath):/home/yamlresume`" yamlresume/yamlresume build $containerFile"
+    docker run --rm -v "$($AbsoluteOutputPath):/home/yamlresume" yamlresume/yamlresume build $containerFile
 
 }
