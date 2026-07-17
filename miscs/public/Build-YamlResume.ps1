@@ -30,14 +30,33 @@ function Build-YamlResume {
         [string]$YamlFile = "my-resume.yml",
 
         [Parameter(Mandatory = $false)]
-        [string]$OutputPath = "./Latest"
+        [string]$Path = "./Latest"
     )
     
-    $AbsoluteOutputPath = Get-AbsoluteOutputPath -Path $OutputPath
+    try {
+        #Gets the absolute path from the string provided in the parameter and creates the directory if it doesn't exist
+        $AbsoluteOutputPath = Get-AbsoluteOutputPath -Path $Path
+        $BuildFileName = Split-Path -Leaf $YamlFile
+        $FinalBuildFile = Join-Path -Path $AbsoluteOutputPath -ChildPath $BuildFileName
 
-    #Moves target resume .yml file to the output path so it can be referenced by the docker container
-    Copy-Item -Path $YamlFile -Destination $AbsoluteOutputPath
-    $BuildYmlFile = Split-Path -Leaf $YamlFile
+        if (Test-Path -LiteralPath $FinalBuildFile) {
+            if ($PSCmdlet.ShouldProcess('Remove-Item',"$FinalBuildFile")) {
+                #We remove all items in the output path to ensure a clean build environment
+                #We ignore confirm here so we do not double trigger a confirmation
+                Get-ChildItem -LiteralPath $AbsoluteOutputPath -Recurse | Remove-Item -Confirm:$false
+            }
+            else {
+                New-Item -Path $AbsoluteOutputPath -Name $Path -ItemType Directory
+            }
+        }
+        else {
+            #Moves target resume .yml file to the output path so it can be referenced by the docker container
+            Copy-Item -Path $YamlFile -Destination $AbsoluteOutputPath
+        }
+    }
+    catch {
+        Write-Error "An error occurred while setting up build: $($_.Exception.Message)"
+    }
     
     if ($PSCmdlet.ShouldProcess("$AbsoluteOutputPath")) {
         Write-Verbose "Docker command executed: docker run --rm -v `"$($AbsoluteOutputPath):/home/yamlresume`" yamlresume/yamlresume build $BuildYmlFile"
